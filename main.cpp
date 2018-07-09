@@ -1,45 +1,71 @@
-#include <opencv2\highgui\highgui.hpp>
-#include <opencv2\imgproc\imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "VideoFaceDetector.h"
 
-const cv::String    WINDOW_NAME("Camera video");
-const cv::String    CASCADE_FILE("haarcascade_frontalface_default.xml");
+using namespace std;
+using namespace cv;
 
-int main(int argc, char** argv)
+const String WINDOW_NAME("Camera video");
+const String CASCADE_FILE("haarcascade_frontalface_alt.xml");
+
+string toStr(int id)
+{
+	string prc = "";
+	if (id == 0)
+		return "0";
+	while (id != 0)
+	{
+		prc += '0' + (id % 10);
+		id /= 10;
+	}
+	string ret = "";
+	for (int i = prc.size() - 1; i >= 0; i--)
+		ret += prc[i];
+	return ret;
+}
+
+int main(int argc, char **argv)
 {
 	// Try opening camera
-	cv::VideoCapture camera(0);
-	//cv::VideoCapture camera("D:\\video.mp4");
-	if (!camera.isOpened()) {
+	VideoCapture camera(0);
+	//VideoCapture camera("D:\\video.mp4");
+	if (!camera.isOpened())
+	{
 		fprintf(stderr, "Error getting camera...\n");
 		exit(1);
 	}
-
-	cv::namedWindow(WINDOW_NAME, cv::WINDOW_KEEPRATIO | cv::WINDOW_AUTOSIZE);
+	vector<int> compression_params;
+	compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+	compression_params.push_back(0); // 0 to High Quality
+	namedWindow(WINDOW_NAME, WINDOW_AUTOSIZE);
 
 	VideoFaceDetector detector(CASCADE_FILE, camera);
-	cv::Mat frame;
+	Mat frame;
+	int id = 0;
 	double fps = 0, time_per_frame;
 	while (true)
 	{
-		auto start = cv::getCPUTickCount();
+		auto start = getCPUTickCount();
 		detector >> frame;
-		auto end = cv::getCPUTickCount();
+		auto end = getCPUTickCount();
 
-		time_per_frame = (end - start) / cv::getTickFrequency();
+		time_per_frame = (end - start) / getTickFrequency();
 		fps = (15 * fps + (1 / time_per_frame)) / 16;
 
 		printf("Time per frame: %3.3f\tFPS: %3.3f\n", time_per_frame, fps);
 
 		if (detector.isFaceFound())
 		{
-			cv::rectangle(frame, detector.face(), cv::Scalar(255, 0, 0));
-			cv::circle(frame, detector.facePosition(), 30, cv::Scalar(0, 255, 0));
+			String path = toStr(id++);
+			imwrite("image/captureFace_" + path + ".png", frame(detector.face()), compression_params);
+			rectangle(frame, detector.face(), Scalar(255, 0, 0));
+			circle(frame, detector.facePosition(), 30, Scalar(0, 255, 0));
 		}
-		
-		cv::imshow(WINDOW_NAME, frame);
-		if (cv::waitKey(25) == 27) break;
+
+		imshow(WINDOW_NAME, frame);
+		if (waitKey(25) == 27)
+			break;
 	}
 
 	return 0;

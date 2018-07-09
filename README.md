@@ -1,3 +1,10 @@
+# How Start
+
+Run command:
+
+./opencv.sh
+./FaceTrack
+
 # [Youtube video](https://youtu.be/lkFBWUjwDl8)
 
 # Usage
