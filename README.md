@@ -2,7 +2,7 @@
 
 Run command:
 
-./opencv.sh
+./opencv.sh <br/>
 ./FaceTrack
 
 # [Youtube video](https://youtu.be/lkFBWUjwDl8)
